@@ -121,6 +121,14 @@
             "basePrefix": "https://cdn.jsdelivr.net/gh/docusign/mock-cdn-assets/widgets/",
             "releaseConfig": [
                 {
+                    "widgetId": "@1ds/bathtub",
+                    "plugin": {
+                        "enabled": true,
+                        "route": "/bathtub"
+                    },
+                    "version": "1.0.0"
+                },
+                {
                     "widgetId": "@1ds/starter-kit",
                     "plugin": {
                         "enabled": true,
