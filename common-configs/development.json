@@ -118,7 +118,7 @@
                 {
                   "id": "@remix-run/router",
                   "name": "RemixRouter",
-                  "version": "1.23.0",
+                  "version": "1.23.1",
                   "isPreloaded": true,
                   "path": "dist/router.umd.js",
                   "type": "external"
