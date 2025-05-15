@@ -4,8 +4,11 @@ on:
   push:
     branches:
       - main  # Trigger on push to the main branch
-    #paths:
-    #  - common-configs/**
+  pull_request:
+    branches:
+      - main  # Trigger on PRs targeting the main branch
+
+# trigger 
 
 jobs:
   upload-and-purge:
@@ -24,14 +27,12 @@ jobs:
           akamai install netstorage
           akamai install purge
           
-          set -e
           echo "[ccu]
           client_secret = ${{ secrets.AKAMAI_API_CLIENT_SECRET }}
           host = ${{ secrets.AKAMAI_API_CLIENT_HOST }}
           access_token = ${{ secrets.AKAMAI_API_CLIENT_ACCESS_TOKEN }}
           client_token = ${{ secrets.AKAMAI_API_CLIENT_CLIENT_TOKEN }}" > ~/.edgerc
 
-          set -e
           echo "[default]
           key = ${{ secrets.AKAMAI_NS_UPLOAD_ACCOUNT_KEY }}
           id = 1fe
@@ -39,17 +40,79 @@ jobs:
           host = 1fe-nsu.akamaihd.net
           cpcode = 1800003" > ~/auth
 
+      - name: Install rsync
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y rsync
+          rsync --version || { echo "rsync installation failed"; exit 1; }
+
+      - name: Validate rsync password file
+        run: |
+          set -e
+          if [ ! -f ~/auth ]; then
+            echo "Error: Password file ~/auth is missing."
+            exit 1
+          fi
+          echo "Password file exists and is accessible."
+
+      - name: Validate and set permissions for rsync password file
+        run: |
+          set -e
+          PASSWORD_FILE="$HOME/auth"
+          if [ ! -f "$PASSWORD_FILE" ]; then
+            echo "Error: Password file $PASSWORD_FILE is missing."
+            exit 1
+          fi
+          chmod 600 "$PASSWORD_FILE"
+          echo "Password file permissions set to 600."
+
       - name: Upload config files to NetStorage
         run: |
           cp common-configs/integration.json live.json && akamai netstorage upload live.json --directory integration/configs --config ~/auth && rm live.json
           cp common-configs/stage.json live.json && akamai netstorage upload live.json --directory stage/configs --config ~/auth && rm live.json
           cp common-configs/demo.json live.json && akamai netstorage upload live.json --directory demo/configs --config ~/auth && rm live.json
           cp common-configs/production.json live.json && akamai netstorage upload live.json --directory production/configs --config ~/auth && rm live.json
-          
-      - name: Purge assets to reset cache
+
+      - name: Sync directories to NetStorage using rsync
         run: |
           set -e
-          akamai purge invalidate https://1fe-a.akamaihd.net/integration/configs/live.json https://1fe-a.akamaihd.net/stage/configs/live.json https://1fe-a.akamaihd.net/demo/configs/live.json https://1fe-a.akamaihd.net/production/configs/live.json
-      
-            
 
+          # Retrieve the rsync password from secrets and write it to the password file
+          akamai_ns_rsync_password=${{ secrets.AKAMAI_NS_RSYNC_PASSWORD }}
+          PASSWORD_FILE="$HOME/auth"
+          echo "$akamai_ns_rsync_password" > "$PASSWORD_FILE"
+          chmod 600 "$PASSWORD_FILE"
+
+          # Define the rsync user
+          RSYNC_USER="1fe"  # Replace with the correct username
+
+          # Sync each folder to NetStorage
+          for folder in integration development production; do
+            echo "Syncing $folder to NetStorage..."
+            timeout 600 rsync -avvv --progress --delete "$folder/" "$RSYNC_USER@1fe.rsync.upload.akamai.com::$folder" --password-file="$PASSWORD_FILE" || echo "Failed to sync $folder"
+          done
+
+      - name: Purge all assets with cache tag
+        run: |
+          set -e
+          echo "Purging all assets with cache tag '1fe'..."
+          akamai purge invalidate --tag 1fe || echo "Failed to purge assets with cache tag '1fe'"
+
+      - name: Generate list of files to purge
+        run: |
+          set -e
+          for folder in integration development production; do
+            find "$folder" -type f >> files_to_purge.txt
+          done
+          echo "Files to purge:"
+          cat files_to_purge.txt
+
+      - name: Purge individual files from Akamai cache
+        run: |
+          set -e
+          while read file; do
+            url="https://1fe-a.akamaihd.net/$file"
+            echo "Purging $url..."
+            akamai purge invalidate "$url" || echo "Failed to purge $url"
+          done < files_to_purge.txt
