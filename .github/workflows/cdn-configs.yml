@@ -76,7 +76,7 @@ jobs:
             fi
             
             echo "  Syncing '$folder_name/'..."
-            rsync -avv --delete \
+            rsync -avv \
               -e "ssh -o StrictHostKeyChecking=no -i $HOME/key.pem" \
               "$folder_name/" \
               "sshacs@1fe.rsync.upload.akamai.com:$folder_name/" \
@@ -143,7 +143,7 @@ jobs:
               continue 
             fi
             
-            rsync -avvc --dry-run --delete \
+            rsync -avvc --dry-run \
               -e "ssh -o StrictHostKeyChecking=no -i $HOME/key.pem" \
               "$folder_name/" \
               "sshacs@1fe.rsync.upload.akamai.com:$folder_name/" \
