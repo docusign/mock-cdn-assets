@@ -14,7 +14,7 @@
         }
       },
       {
-        "widgetId": "@1fe/starter-kit",
+        "widgetId": "@1fe/test-starter-kit",
         "plugin": {
           "enabled": true,
           "route": "/app1"

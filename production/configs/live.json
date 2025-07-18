@@ -14,7 +14,7 @@
         }
       },
       {
-        "widgetId": "@1fe/starter-kit",
+        "widgetId": "@1fe/authed-widget",
         "plugin": {
           "enabled": true,
           "route": "/app1"
@@ -47,8 +47,18 @@
       }
     },
     "browserslistConfig": {
-      "buildTarget": ["defaults", "not dead", "edge>=19", "unreleased versions"],
-      "unsupportedBrowserScreen": ["defaults", "not dead", "edge>=19", "unreleased versions"]
+      "buildTarget": [
+        "defaults",
+        "not dead",
+        "edge>=19",
+        "unreleased versions"
+      ],
+      "unsupportedBrowserScreen": [
+        "defaults",
+        "not dead",
+        "edge>=19",
+        "unreleased versions"
+      ]
     }
   }
 }
