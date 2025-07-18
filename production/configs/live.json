@@ -54,8 +54,18 @@
       }
     },
     "browserslistConfig": {
-      "buildTarget": ["defaults", "not dead", "edge>=19", "unreleased versions"],
-      "unsupportedBrowserScreen": ["defaults", "not dead", "edge>=19", "unreleased versions"]
+      "buildTarget": [
+        "defaults",
+        "not dead",
+        "edge>=19",
+        "unreleased versions"
+      ],
+      "unsupportedBrowserScreen": [
+        "defaults",
+        "not dead",
+        "edge>=19",
+        "unreleased versions"
+      ]
     }
   }
 }
