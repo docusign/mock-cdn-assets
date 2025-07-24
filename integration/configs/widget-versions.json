@@ -1,0 +1,10 @@
+[
+  {
+    "widgetId": "@1fe/bathtub",
+    "version": "1.0.50"
+  },
+  {
+    "widgetId": "@1fe/widget-starter-kit",
+    "version": "1.0.18"
+  }
+]
