@@ -6,6 +6,14 @@
     "basePrefix": "https://1fe-a.akamaihd.net/integration/widgets/",
     "configs": [
       {
+        "widgetId": "@1fe/playground",
+        "type": "system",
+        "plugin": {
+          "enabled": true,
+          "route": "/playground"
+        }
+      },
+      {
         "widgetId": "@1fe/bathtub",
         "type": "system",
         "plugin": {
