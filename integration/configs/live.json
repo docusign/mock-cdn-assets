@@ -14,14 +14,6 @@
         }
       },
       {
-        "widgetId": "@1fe/bathtub",
-        "type": "system",
-        "plugin": {
-          "enabled": true,
-          "route": "/bathtub"
-        }
-      },
-      {
         "widgetId": "@1fe/widget-starter-kit",
         "plugin": {
           "enabled": true,
