@@ -705,7 +705,7 @@
         return res.text().then(function (source) {
           if (source.indexOf('//# sourceURL=') < 0)
             source += '\n//# sourceURL=' + url;
-          (0, eval)(source);
+          new Function(source)();
           return loader.getRegister(url);
         });
       });
