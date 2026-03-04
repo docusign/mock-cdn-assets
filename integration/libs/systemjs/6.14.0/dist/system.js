@@ -702,11 +702,26 @@
         var contentType = res.headers.get('content-type');
         if (!contentType || !jsContentTypeRegEx.test(contentType))
           throw Error(errMsg(4, 'Unknown Content-Type "' + contentType + '", loading ' + url + (parent ? ' from ' + parent : '')));
-        return res.text().then(function (source) {
-          if (source.indexOf('//# sourceURL=') < 0)
-            source += '\n//# sourceURL=' + url;
-          (0, eval)(source);
-          return loader.getRegister(url);
+        // We validated the response, now load the script via a script element
+        return new Promise(function (resolve, reject) {
+          if (!hasDocument) {
+            // Fallback: in non-DOM environments, we cannot safely execute source via new Function
+            return reject(Error(errMsg(4, 'Cannot load ' + url + ' without DOM execution context')));
+          }
+          var script = document.createElement('script');
+          script.async = false;
+          script.src = url;
+          script.onload = function () {
+            try {
+              resolve(loader.getRegister(url));
+            } catch (e) {
+              reject(e);
+            }
+          };
+          script.onerror = function () {
+            reject(Error(errMsg(7, 'Error loading ' + url + (parent ? ' from ' + parent : ''))));
+          };
+          (document.head || document.documentElement).appendChild(script);
         });
       });
     };

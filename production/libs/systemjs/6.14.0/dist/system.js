@@ -28,6 +28,24 @@
         baseUrl = baseUrl.slice(0, lastSepIndex + 1);
     }
   
+    function isTrustedUrl (url) {
+      try {
+        if (typeof URL === 'undefined')
+          return true;
+        var trustedBase = baseUrl;
+        if (!trustedBase && typeof location !== 'undefined')
+          trustedBase = location.href;
+        if (!trustedBase)
+          return true;
+        var trustedOrigin = new URL(trustedBase, trustedBase).origin;
+        var candidateOrigin = new URL(url, trustedBase).origin;
+        return trustedOrigin === candidateOrigin;
+      }
+      catch (e) {
+        return false;
+      }
+    }
+  
     var backslashRegEx = /\\/g;
     function resolveIfNotPlainOrUrl (relUrl, parentUrl) {
       if (relUrl.indexOf('\\') !== -1)
@@ -705,7 +723,10 @@
         return res.text().then(function (source) {
           if (source.indexOf('//# sourceURL=') < 0)
             source += '\n//# sourceURL=' + url;
-          (0, eval)(source);
+          if (!isTrustedUrl(url)) {
+            throw Error(errMsg(9, 'Refusing to execute untrusted module URL ' + url + (parent ? ' from ' + parent : '')));
+          }
+          (new Function(source))();
           return loader.getRegister(url);
         });
       });
